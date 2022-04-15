@@ -22,6 +22,11 @@ initialSetup = () => {
 routesSetups = ()=>{
   for (const iterator of routerMap) {
     const router = require(iterator.fileName)
+    if(iterator.middleware && iterator.middleware.length>0){
+      app.use(`/api${iterator.path}`, (req, res, next)=>{
+        next()
+      }, ...[...iterator.middleware, router])
+    }
     app.use(`/api${iterator.path}`, router)
     // console.log(iterator)
     
