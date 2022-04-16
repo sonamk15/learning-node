@@ -4,11 +4,17 @@ const path  = require('path');
 const cors = require('cors');
 const morgan = require('morgan');
 const moment = require("moment");
-var fs = require('fs')
+var fs = require('fs');
 require('dotenv').config();
 
+const db = require("./src/db");
 const routerMap = require('./router')
-let app = express()
+let app = express();
+const MONGO_HOSTNAME = process.env.MONGO_HOSTNAME;
+const MONGO_PORT = process.env.MONGO_PORT;
+const MONGO_DB = process.env.MONGO_DB;
+const DB_URL = `mongodb://${MONGO_HOSTNAME}:${MONGO_PORT}/${MONGO_DB}`;
+
 initialSetup = () => {
   app.use(bodyparser.json({limit:'150mb', parameterLimit:5000}))
   app.use(bodyparser.urlencoded({limit:'150mb', parameterLimit:5000, extended:true }))
@@ -57,9 +63,14 @@ routesSetups = ()=>{
     app.use(`/api${iterator.path}`, router)
   }
 }
-initialSetup()
-routesSetups()
 
+dbConnection = () => {
+  db.connect(DB_URL);
+}
+
+initialSetup();
+routesSetups();
+dbConnection()
 
 const listerner = app.listen(8000, () => {
   console.log(`lisning on port no: ${listerner.address().port}`)  
