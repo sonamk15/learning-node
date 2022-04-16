@@ -10,9 +10,6 @@ require('dotenv').config();
 const routerMap = require('./router')
 let app = express()
 
-// create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'apilogs.json'), { flags: 'a' })
-
 
 
 initialSetup = () => {
@@ -23,8 +20,13 @@ initialSetup = () => {
   app.use(express.json())
   app.use(express.urlencoded({extended:false}))
   app.use(cors({origin:'*'}))
-  // setup the logger
   
+  
+  // setup the logger
+  if (!fs.existsSync(path.join(__dirname, 'apilogs.json')) ) {
+    fs.writeFileSync(path.join(__dirname, 'apilogs.json'), JSON.stringify([]));
+  }
+    
   app.use(morgan( (tokens, req, res) => {
     let rawdata = fs.readFileSync('apilogs.json');
     let jsonData = JSON.parse(rawdata)
@@ -40,9 +42,10 @@ initialSetup = () => {
     jsonData.push(data)
     fs.writeFileSync("apilogs.json", JSON.stringify(jsonData, null, 2));
     return;
-  }, { stream: accessLogStream }))
+  }))
 }
 
+//  route setup
 routesSetups = ()=>{
   for (const iterator of routerMap) {
     const router = require(iterator.fileName)
