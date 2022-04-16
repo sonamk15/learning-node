@@ -9,9 +9,6 @@ require('dotenv').config();
 
 const routerMap = require('./router')
 let app = express()
-
-
-
 initialSetup = () => {
   app.use(bodyparser.json({limit:'150mb', parameterLimit:5000}))
   app.use(bodyparser.urlencoded({limit:'150mb', parameterLimit:5000, extended:true }))
@@ -34,7 +31,10 @@ initialSetup = () => {
       "URI:": tokens.url(req, res),
       "STATUS_CODE:": tokens.status(req, res),
       "BODY:": JSON.stringify(req.body),
+      "PARAMS": JSON.stringify(req.params),
+      "QUERY_PARAMS": JSON.stringify(req.query),
       "HEADER:": JSON.stringify(req.headers),
+      "API_RES": req.apiRes ? JSON.stringify(req.apiRes): null,
       "RESPONCE_TIME:": `${tokens['response-time'](req, res)}ms`,
       "TOTAL_RES_TIME:": `${tokens['total-time'](req, res)}ms`,
       "REQ_DATE_TIME:": moment(tokens.date()).format("DD-MM-YYYY hh:mm:ss A")
@@ -55,8 +55,6 @@ routesSetups = ()=>{
       }, ...[...iterator.middleware, router])
     }
     app.use(`/api${iterator.path}`, router)
-    // console.log(iterator)
-    
   }
 }
 initialSetup()
@@ -66,4 +64,3 @@ routesSetups()
 const listerner = app.listen(8000, () => {
   console.log(`lisning on port no: ${listerner.address().port}`)  
 })
-
