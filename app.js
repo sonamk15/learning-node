@@ -17,6 +17,9 @@ const MONGO_PORT = process.env.MONGO_PORT;
 const MONGO_DB = process.env.MONGO_DB;
 const DB_URL = `mongodb://${MONGO_HOSTNAME}:${MONGO_PORT}/${MONGO_DB}`;
 
+//create API log folder outside the project directory to avoid the project restart
+const folder = "../api-logs";
+
 initialSetup = () => {
   app.use(bodyparser.json({limit:'150mb', parameterLimit:5000}))
   app.use(bodyparser.urlencoded({limit:'150mb', parameterLimit:5000, extended:true }))
@@ -25,15 +28,15 @@ initialSetup = () => {
   app.use(express.json())
   app.use(express.urlencoded({extended:false}))
   app.use(cors({origin:'*'}))
-  
-  
+
   // setup the logger
-  if (!fs.existsSync(path.join(__dirname, 'apilogs.json')) ) {
-    fs.writeFileSync(path.join(__dirname, 'apilogs.json'), JSON.stringify([]));
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder);
+    fs.writeFileSync(`${folder}/log.json` ,JSON.stringify([]));
   }
     
   app.use(morgan( (tokens, req, res) => {
-    let rawdata = fs.readFileSync('apilogs.json');
+    let rawdata = fs.readFileSync(`${folder}/log.json`);
     let jsonData = JSON.parse(rawdata)
     const data = { "METHOD:": tokens.method(req, res),
       "URI:": tokens.url(req, res),
@@ -48,7 +51,7 @@ initialSetup = () => {
       "REQ_DATE_TIME:": moment(tokens.date()).format("DD-MM-YYYY hh:mm:ss A")
     }
     jsonData.push(data)
-    fs.writeFileSync("apilogs.json", JSON.stringify(jsonData, null, 2));
+    fs.writeFileSync(`${folder}/log.json`, JSON.stringify(jsonData, null, 2));
     return;
   }))
 }
@@ -76,7 +79,7 @@ errorHandlers = () => {
 
   // error handler
   app.use(function (err, req, res, next) {
-    console.log("I am Pralhad", err.message)
+    // console.log("I am Pralhad", err.message)
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {status: err.status};
