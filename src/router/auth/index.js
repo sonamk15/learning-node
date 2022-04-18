@@ -7,9 +7,9 @@ router.post("/login", async (req, res) => {
   const userLogin = await AuthServices.Login(req.body);
   req.apiRes = userLogin;
   if (userLogin.success) {
-    res.send(userLogin);
+    res.status(userLogin.status).send(userLogin);
   } else {
-    res.status(400).send(userLogin);
+    res.status(userLogin.status).send(userLogin);
   }
 });
 
@@ -17,9 +17,9 @@ router.post("/sing-up", async (req, res) => {
   const userSingUp = await AuthServices.singUp(req.body);
   req.apiRes = userSingUp;
   if (userSingUp.success) {
-    res.send(userSingUp);
+    res.status(userSingUp.status).send(userSingUp);
   } else {
-    res.status(400).send(userSingUp);
+    res.status(userSingUp.status).send(userSingUp);
   }
 });
 

@@ -6,10 +6,10 @@ router.get("/", async (req, res) => {
   const userData = req.userCtx;
   const getUserData = await UserServices.getUser(userData);
   req.apiRes = getUserData;
-  if (userLogin.success) {
-    res.send(getUserData);
+  if (getUserData.success) {
+    res.status(getUserData.status).send(getUserData);
   } else {
-    res.status(400).send(getUserData);
+    res.status(getUserData.status).send(getUserData);
   }
 });
 

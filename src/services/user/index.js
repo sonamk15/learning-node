@@ -1,9 +1,9 @@
 class UserServices {
   getUser = async (userData) => {
     try {
-      return { success: true, userData };
+      return { success: true, data: userData, status: 200 };
     } catch (e) {
-      return { success: false, message: e.message };
+      return { success: false, message: e.message, status: 400 };
     }
   };
 }
