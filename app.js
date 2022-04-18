@@ -5,6 +5,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const moment = require("moment");
 var fs = require('fs');
+const cron = require("node-cron");
+var createError = require("http-errors");
 require('dotenv').config();
 
 const db = require("./src/db");
@@ -54,15 +56,36 @@ initialSetup = () => {
 //  route setup
 routesSetups = ()=>{
   for (const iterator of routerMap) {
-    const router = require(iterator.fileName)
+    console.log(`Initializing ${iterator.fileName} --> /api${iterator.path}`);
+    const router = require(iterator.fileName);
     if(iterator.middleware && iterator.middleware.length>0){
       app.use(`/api${iterator.path}`, (req, res, next)=>{
         next()
       }, ...[...iterator.middleware, router])
     }
-    app.use(`/api${iterator.path}`, router)
+    app.use(`/api${iterator.path}`, router);
+    console.log(`👍`);
   }
 }
+
+errorHandlers = () => {
+  // catch 404 and forward to error handler
+  app.use(function (req, res, next) {
+    next(createError(404));
+  });
+
+  // error handler
+  app.use(function (err, req, res, next) {
+    console.log("I am Pralhad", err.message)
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get("env") === "development" ? err : {status: err.status};
+    // render the error page
+    res.status(err.status || 500);
+    res.render("error");
+  });
+  console.log("error handlers setup done 👍");
+};
 
 dbConnection = () => {
   db.connect(DB_URL);
@@ -70,8 +93,16 @@ dbConnection = () => {
 
 initialSetup();
 routesSetups();
-dbConnection()
+errorHandlers();
+dbConnection();
+
+if (process.env.CRON_ON === "YES") {
+  // "*/1 * * * *", Every min
+  // "0 * * * *", Every hours
+  // "* */4 * * *", Every four hours
+  cron.schedule("*/1 * * * *", async () => {});
+}
 
 const listerner = app.listen(8000, () => {
-  console.log(`lisning on port no: ${listerner.address().port}`)  
+  console.log(`⚡️[server]: Server is running at http://localhost:${listerner.address().port}`);  
 })
